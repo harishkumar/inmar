@@ -151,6 +151,14 @@
 </head>
 <html lang="en-US">
 <body ng-app="extCon" ng-controller="contactsCtrl">
+	   <div class="container alertCont" style="padding: 1.5rem;">
+	   <div class="alert alert-warning alert-dismissible fade show" role="alert">
+		  <strong>For IE Browser!</strong> Please call this file from any server location instead of local Machine for sessionStorage to work.
+		  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+			<span aria-hidden="true">&times;</span>
+		  </button>
+	   </div>
+	   </div>
 
 	   <div class="container" style="padding: 1.5rem;">
 		<div class="card border-0">
@@ -267,7 +275,13 @@
 	  </div>
 	</div>
 	
-	
+	<script>
+		  var userAgent, ieReg, ie;
+		  userAgent = window.navigator.userAgent;
+		  ieReg = /msie|Trident.*rv[ :]*11\./gi;
+		  ie = ieReg.test(userAgent);
+		  ie ? $(".alertCont").show() : $(".alertCont").hide()
+	</script>
 
 </body>
 </html>
