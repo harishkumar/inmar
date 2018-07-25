@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<head>
+<meta charset="utf-8"/>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+	<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+	<script src="https://use.fontawesome.com/0dda3585c9.js"></script>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+	<script>
+		var app = angular.module("extCon",[]);
+		app.factory('contactsFactory', function () {
+		  var contactsFactory = {};
+		  var createMockData = [
+					  {
+						type: "Executive",
+						name: "Ann Brown",
+						title: "CEO",
+						phone: "(512)+456-5555",
+						ext: "",
+						fax: "(512)456-5555",
+						email: "Executive"				
+					  },
+					  {
+						type: "Inmar AR",
+						name: "Mary Smith",
+						title: "Lorem Ipsum",
+						phone: "(512)+456-5555",
+						ext: "",
+						fax: "(512)456-5555",
+						email: "Inmar AR"				
+					  },
+					  {
+						type: "Executive",
+						name: "John Doe",
+						title: "Dolor Sit",
+						phone: "(512)+456-5555",
+						ext: "",
+						fax: "(512)456-5555",
+						email: "Executive"				
+					  },
+					  {
+						type: "Daily",
+						name: "John Doe",
+						title: "Dolor Sit amet",
+						phone: "(512)+456-5555",
+						ext: "",
+						fax: "(512)456-5555",
+						email: "Daily"				
+					  },
+					  {
+						type: "Other",
+						name: "John Doe",
+						title: "Lorem Ipsum",
+						phone: "(512)+456-5555",
+						ext: "",
+						fax: "(512)456-5555",
+						email: "Other"				
+					  }
+					];
+
+		  contactsFactory.createContactsObj= function() {
+			sessionStorage.setItem("contacts", JSON.stringify(createMockData));
+		  }
+
+		  contactsFactory.getContactsObj= function() {
+			return JSON.parse(sessionStorage.getItem("contacts"));
+		  }
+
+		  contactsFactory.updateContactsObj= function(obj) {
+			sessionStorage.removeItem("contacts");
+			sessionStorage.setItem("contacts", JSON.stringify(obj));
+		  }
+
+		  return contactsFactory;
+
+		});
+
+		app.service('contactsService', function(contactsFactory) {
+		    this.createNewMockData = function () {
+		        return contactsFactory.createContactsObj();
+		    }
+
+			this.getData = function () {
+		        return contactsFactory.getContactsObj();
+		    }
+
+			this.updateData = function(obj){
+				return contactsFactory.updateContactsObj(obj);
+			}
+
+			this.isDataExists = function(){
+				return (sessionStorage.getItem("contacts")==null ? false : true); 
+			}
+		});
+
+		app.controller('contactsCtrl', function($scope,contactsFactory,contactsService) {
+			if(!contactsService.isDataExists()){
+				contactsService.createNewMockData();
+			}
+			$scope.contacts = contactsService.getData();
+			$scope.newContacts = {};
+			$scope.imgValue = "minus";
+
+			$scope.remove = function(){
+				var updatedList=[];
+				angular.forEach($scope.contacts, function(data){
+					if(!data.selected){
+						updatedList.push(data);
+					}
+				});
+				contactsService.updateData(updatedList);
+				$scope.contacts = contactsService.getData();
+			}
+
+			$scope.add = function(){
+				$scope.contacts = JSON.parse(angular.toJson($scope.contacts));
+				$scope.contacts.push($scope.newContacts);
+				contactsService.updateData($scope.contacts);
+				$scope.contacts = contactsService.getData();
+				$scope.newContacts = {};
+				$('#contactsModal').modal('hide')
+			}
+			
+			$scope.reset = function(){
+				contactsService.createNewMockData();
+				$scope.contacts = contactsService.getData();
+			}
+
+			$scope.resetNewContacts = function(){
+				$scope.newContacts = {};
+			}
+
+			$scope.changeVal = function(){
+				$scope.imgValue = ($scope.imgValue=="minus" ? "plus" : "minus");
+			}
+			
+		});		
+
+		app.directive('contactsModal', function() {
+		   return {
+		     restrict: 'A',
+		     link: function(scope, element, attr) {
+		       scope.dismiss = function() {
+		           element.modal('hide');
+		       };
+		     }
+		   } 
+		});
+	</script>
+</head>
+<html lang="en-US">
+<body ng-app="extCon" ng-controller="contactsCtrl">
+
+	   <div class="container" style="padding: 1.5rem;">
+		<div class="card border-0">
+		    <div class=" border-0 container" id="headingOne">
+		     <div class="container">	
+		      <div class="col-md-6 text-center">
+					<h4 class="float-md-left text-primary">External Contacts</h4>
+				</div>
+				<div class="col-md-6 float-md-right">
+					<span class="float-md-right" ng-click="changeVal()" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+			          <i class="fa fa-{{imgValue}}-square-o" aria-hidden="true"></i> Collapse 
+			        </span>
+				</div>
+				<div class="col-md-12 float-md-left">Select the client contacts assoiciated with this offer</div>
+			 </div>
+		    </div>
+
+		    <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion" style="">
+		      <div class="card-body">
+		        <div class="col-12 rounded" style="padding:0px;border: 1px solid #dee2e6;">
+							  <table class="table table-striped table-bordered zui-table-rounded" style="margin-bottom:0px">
+								  <thead>
+									<tr class="text-primary">
+									  <th style="width: 4%"></th>
+									  <th scope="col">Type</th>
+									  <th scope="col">Name</th>
+									  <th scope="col">Title</th>
+									  <th scope="col">Phone</th>
+									  <th scope="col">Ext.</th>
+									  <th scope="col">Fax</th>
+									  <th scope="col">Email</th>
+									</tr>
+								  </thead>
+								  <tbody>
+								  <form ng-submit="addNew()">
+									<tr ng-repeat="contact in contacts">
+									  <th><input type="checkbox" ng-model="contact.selected"/></th>
+									  <td>{{contact.type}}</td>
+									  <td>{{contact.name}}</td>
+									  <td>{{contact.title}}</td>
+									  <td>{{contact.phone}}</td>
+									  <td>{{contact.ext}}</td>
+									  <td>{{contact.fax}}</td>
+									  <td>{{contact.email}}</td>
+									</tr>									
+								  </tbody>
+							  </table>
+							</div>
+
+							<div class="container" style="padding: 1.5rem;">
+							  <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#contactsModal">Add</button>
+							  <button type="button" class="btn btn-danger" ng-click="remove()">Remove</button>
+							  <button type="button" class="btn btn-light" ng-click="reset()">Reset</button>
+							</div>
+		      </div>
+		    </div>
+  		</div>
+  	   </div>
+		
+	  
+	<!-- Modal -->
+	<div class="modal fade" id="contactsModal"  tabindex="-1" role="dialog" aria-labelledby="contactsModalLabel" aria-hidden="true">
+	  <div class="modal-dialog" role="document">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<h5 class="modal-title" id="contactsModalLabel">Modal title</h5>
+			<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			  <span aria-hidden="true">&times;</span>
+			</button>
+		  </div>
+		  <div class="modal-body">
+			<form ng-submit="addNew()">
+			  <div class="row">
+				  <div class="col-sm-6">
+					  <div class="form-group">
+						<label for="inputAddress">Type</label>
+						<input type="text" class="form-control" id="type" ng-model="newContacts.type" placeholder="Type">
+					  </div>
+					  <div class="form-group">
+						<label for="inputAddress2">Name</label>
+						<input type="text" class="form-control" id="inputAddress2" ng-model="newContacts.name" placeholder="Name">
+					  </div>
+					  <div class="form-group">
+						<label for="inputAddress2">Title</label>
+						<input type="text" class="form-control" id="inputAddress2" ng-model="newContacts.title" placeholder="Title">
+					  </div>
+					  <div class="form-group">
+						<label for="inputAddress2">Phone</label>
+						<input type="text" class="form-control" id="inputAddress2" ng-model="newContacts.phone" placeholder="Phone">
+					  </div>
+				  </div>
+				  <div class="col-sm-6">
+					  <div class="form-group">
+						<label for="inputAddress2">Ext.</label>
+						<input type="text" class="form-control" id="inputAddress2" ng-model="newContacts.ext" placeholder="Ext.">
+					  </div>
+					  <div class="form-group">
+						<label for="inputAddress2">Fax</label>
+						<input type="text" class="form-control" id="inputAddress2" ng-model="newContacts.fax" placeholder="Fax">
+					  </div>
+					  <div class="form-group">
+						<label for="inputAddress2">Email</label>
+						<input type="text" class="form-control" id="inputAddress2" ng-model="newContacts.email" placeholder="Email">
+					  </div>
+				  </div>
+			  </div>
+		   </form>
+		  </div>
+		  <div class="modal-footer">
+			<button type="button" class="btn btn-secondary" data-dismiss="modal" ng-click="resetNewContacts()">Close</button>
+			<button type="button" class="btn btn-primary" ng-click="add()">Save changes</button>
+		  </div>
+		</div>
+	  </div>
+	</div>
+	
+	
+
+</body>
+</html>
