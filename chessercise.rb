@@ -50,7 +50,7 @@ class Chess
  	when "queen"
  		#queenMovesToDistant # not implemented
  	else
- 		p "sorry, output only for rook,knight,queen"
+ 		p "sorry, output only for rook"
  	end
 
  end
@@ -246,116 +246,6 @@ class Chess
     	moves.delete(@pos)
         (moves.uniq!)
         p moves
- end
-
- def queenMovesToDistant
- 	randArray = getRandomArray
-	p "Distant Destination: #{getDistantTile} --- #{getIndex(getDistantTile)}"
-	print "Random pieces on board: "        		
-	p randArray
- 	#print "QueenMoves: " 
- 	#p queen
- 	# [7,4]  [0,0]
- 	gI=@pIndex.dup
- 	dI=getIndex(getDistantTile).dup
-
- 	a = gI[0]-dI[0]
- 	a = -a if a < @f
- 	b = gI[1]-dI[1]
- 	b = -b if b < @f
- 	p "a:#{a} - b:#{b}"
- 	
- 	if(a > b)
- 		p "main: #{gI} -- #{dI}"
- 	    qm = []
- 	    c = gI[0]
- 	   	x= gI[1]..dI[1]
-	    (gI[1] > dI[1] ? x.first.downto(x.last) : x).each do |val|
-	    	if !(c<@f || c>@l || val<@f || val>@l)
-	    		qm << @board[c][val]
-	    		if(gI[0] > dI[0])
-	    			c = c-1
-	    		else
-	    			c = c+1
-	    		end
-	    	end
-	    end
-	    #p qm
-	    fm = getIndex(qm.last)
-	    #p fm
-	    p "#{fm} && #{dI}"
-	    if(dI[0] == fm[0])
-	    	x = fm[1]..dI[1]
-	    	(fm[1] > dI[1] ? x.first.downto(x.last) : x).each do |val|
-	    		qm << @board[dI[0]][val]
-	    	end
-	    elsif(fm[1] == dI[1])
-	    	x = fm[0]..dI[0]
-	    	(fm[0] > dI[0] ? x.first.downto(x.last) : x).each do |val|
-	    		qm << @board[val][dI[1]]
-	    	end
-
-	    end
-	    qm.delete(@pos)
-	    qm.uniq!
-	    p qm
-
-	elsif(b > a)
-		p "main: #{gI} ,, #{dI}"
-		qm = []
- 	    c = gI[1]
- 	   	x= gI[0]..dI[0]
-	    (gI[0] > dI[0] ? x.first.downto(x.last) : x).each do |val|
-	    	if !(c<@f || c>@l || val<@f || val>@l)
-	    		qm << @board[val][c]
-	    		if(gI[1] > dI[1])
-	    			c = c-1
-	    		else
-	    			c = c+1
-	    		end
-	    	end
-	    end
-	    #p qm
-	    fm = getIndex(qm.last)
-	    #p fm
-	    #p "#{fm} ,, #{dI}"
-	    #p qm
-
-	    if(dI[0] == fm[0])
-	    	x = fm[1]..dI[1]
-	    	(fm[1] > dI[1] ? x.first.downto(x.last) : x).each do |val|
-	    		qm << @board[dI[0]][val]
-	    	end
-	    elsif(fm[1] == dI[1])
-	    	x = fm[0]..dI[0]
-	    	(fm[0] > dI[0] ? x.first.downto(x.last) : x).each do |val|
-	    		qm << @board[val][dI[1]]
-	    	end
-	    end
-	    qm.delete(@pos)
-	    qm.uniq!
-	    p qm
-
-	elsif(a == b)
-		qm = []
- 	    c = gI[0]
- 	   	x= gI[1]..dI[1]
-	    (gI[1] > dI[1] ? x.first.downto(x.last) : x).each do |val|
-	    	if !(c<@f || c>@l || val<@f || val>@l)
-	    		qm << @board[c][val]
-	    		if(gI[1] > dI[1])
-	    			c = c+1
-	    		else
-	    			c = c-1
-	    		end
-	    	end
-	    end
-	    qm.delete(@pos)
-	    qm.uniq!
-	    p qm
-
- 	end
-
  end
 
 end
