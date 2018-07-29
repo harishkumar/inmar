@@ -14,5 +14,11 @@ class TestChessercise < Test::Unit::TestCase
   def test_knight
     assert_equal("c7,e7,b6,f6,b4,f4,c3,e3",Chess.new("-piece","Knight","-position","d5").getMoves)
   end
+
+  def test_distant_moves
+    assert_kind_of(Array,Chess.new("--target","Rook","h2",nil).getMovesToDistant)
+    assert_kind_of(Array,Chess.new("--target","Queen","h2",nil).getMovesToDistant)
+    assert_kind_of(Array,Chess.new("--target","Knight","h2",nil).getMovesToDistant)
+  end
  
 end

@@ -46,9 +46,9 @@ class Chess
  	when "rook"
  		rookMovesToDistant
  	when "knight"
-		# not implemented
+		knightMovesToDistant
  	when "queen"
- 		#queenMovesToDistant # not implemented
+ 		queenMovesToDistant
  	else
  		p "sorry, output only for rook"
  	end
@@ -89,7 +89,7 @@ class Chess
 	  end
 	    puts "\n"
 	end
-	p "index: #{@pIndex}" 
+	###p "index: #{@pIndex}" 
 	puts "\n"
 	
  end
@@ -248,6 +248,157 @@ class Chess
         p moves
  end
 
+ def queenMovesToDistant
+	randArray = getRandomArray
+	p "Distant Destination: #{getDistantTile}"
+	print "Random pieces on board: "        		
+	p randArray
+	gI=@pIndex.dup
+ 	dI=getIndex(getDistantTile).dup
+	moves=[]
+
+	x=(gI[0]..dI[0])
+	c = gI[1]
+	( gI[0]<dI[0] ? x : x.first.downto(x.last)).each do |val|
+	 if(inLimits(val) && inLimits(c))
+	  moves << @board[val][c]
+	  if(gI[1] > dI[1])
+	    c = c-1
+	  else
+	    c = c+1
+	  end
+	 end
+	end
+	
+	turn1 = getIndex(moves.last)
+	if(moves.last != getDistantTile)		
+		if(turn1[0]!=dI[0])
+		   x=(turn1[0]..dI[0])
+		   c = turn1[1]
+		  (turn1[0]<dI[0] ? x : x.first.downto(x.last)).each do |val|
+			 if(inLimits(val) && inLimits(c))
+			  moves << @board[val][c]
+			  if(turn1[1] > dI[1])
+			    c = c-1
+			  elsif(turn1[1] < dI[1])
+			    c = c+1			  
+			  end
+			 end
+		  end
+		elsif(turn1[1]!=dI[1]) #[0,3] - [0,7]
+		  x=(turn1[1]..dI[1])
+		  c = turn1[0]
+		  (turn1[1]<dI[1] ? x : x.first.downto(x.last)).each do |val|
+			 if(inLimits(val) && inLimits(c))
+			  moves << @board[c][val]
+			  if(turn1[0] > dI[0])
+			    c = c-1
+			  elsif(turn1[0] < dI[0])
+			    c = c+1			  
+			  end
+			 end
+		  end
+		end
+
+	end
+	
+	fmoves=[]
+	moves.uniq.each do |val|
+	 randArray.include?(val) ? (fmoves << val;break;) : fmoves << val
+	end
+	p "--Final Moves of #{@piece} towards #{getDistantTile}, stops when captured any random piece----"
+	fmoves.delete(@pos)
+        (fmoves.uniq!)
+	p fmoves
+ end
+
+ def inLimits(val)
+  val>=@f && val<=@l
+ end
+
+ def knightMovesToDistant
+	randArray = getRandomArray
+	p "Distant Destination: #{getDistantTile}"
+	print "Random pieces on board: "        		
+	p randArray
+	fixedDistantTile = getDistantTile.dup
+	#gI=@pIndex.dup
+ 	#dI=getIndex(getDistantTile).dup
+	@knightdistantmoves=[]
+	@norepeat=[]
+	@test=0
+	recurTillDist(fixedDistantTile,nil)	
+	fmoves=[]
+	@knightdistantmoves.uniq.each do |val|
+	 randArray.include?(val) ? (fmoves << val;break;) : fmoves << val
+	end
+	puts "\n"
+	p "--Final Moves of #{@piece} towards #{fixedDistantTile}, stops when captured any random piece----"
+	p fmoves	
+ end
+
+ def recurTillDist(fixedDistantTile,spWhenRepeat)
+	startPositions = spWhenRepeat==nil ? getDesiredPosKnightMoves(@pos).split(",") : spWhenRepeat	
+	finalPositions = getDesiredPosKnightMoves(fixedDistantTile).split(",")
+	gN = getNearestPos(startPositions,finalPositions,fixedDistantTile)
+	nearestPos =  @board[gN[0]][gN[1]]
+	###p "nearest: #{nearestPos}"
+	@norepeat << nearestPos
+	###print "nrep:"; p @norepeat;
+	###print "startPositions:"; p startPositions
+	
+	if(@norepeat.uniq.length != @norepeat.length)
+		startPositions.delete(@norepeat.last)
+		@norepeat.pop
+		recurTillDist(fixedDistantTile,startPositions)
+	else
+		@knightdistantmoves << nearestPos
+		@pos = nearestPos
+		@test = @test+1
+		if(!@knightdistantmoves.include?(fixedDistantTile))
+		 recurTillDist(fixedDistantTile,nil)	  
+		end
+	end
+	
+ end
+
+ def getDesiredPosKnightMoves(pos)
+	@pIndex = getIndex(pos)
+	knight
+ end
+
+ def getNearestPos(gposs,dposs,fixedDistantTile)
+      rws=[]
+      cls=[]
+      diffArr = []
+      mainArr = []
+      c=0
+      dposs.each do |d|
+	gposs.each do |g|
+	  	
+		gg =(getIndex g)[0]-(getIndex d)[0]
+		gg = -gg if (gg < 0)
+		rws << gg
+		dd =(getIndex g)[1]-(getIndex d)[1]
+		dd = -dd if (dd < 0)
+		cls << dd
+		#p "#{getIndex g} - #{getIndex d} => [#{rws[c]},#{cls[c]}] => #{rws[c]-cls[c]<0 ? -(rws[c]-cls[c]) : rws[c]-cls[c]} "
+		mainArr << getIndex(g)
+		diffArr << [rws[c],cls[c]]
+		c=c+1
+		
+	end
+      end
+      smallarr= diffArr.sort[0]
+      hash = Hash[diffArr.map.with_index.to_a] 
+      if mainArr.include? (getIndex fixedDistantTile)
+        getIndex(fixedDistantTile)
+      else
+	mainArr[hash[smallarr]]
+      end
+      
+ end
+
 end
 
 
@@ -256,7 +407,7 @@ chess = Chess.new(ARGV[0],ARGV[1],ARGV[2],ARGV[3])
 
 if(ARGV[1]!= nil && ARGV[3]!= nil && ARGV[0]!="--target" && (ARGV[1].downcase=="rook" || ARGV[1].downcase=="queen" || ARGV[1].downcase=="knight"))
 	chess.getMoves
-elsif(ARGV[1]!= nil && ARGV[0].downcase=="--target" && ARGV[1].downcase=="rook" && ARGV[2]!=nil) 
+elsif(ARGV[1]!= nil && ARGV[0].downcase=="--target" && ARGV[2]!=nil && (ARGV[1].downcase=="rook" || ARGV[1].downcase=="queen" || ARGV[1].downcase=="knight")) 
 	chess.getMovesToDistant
 else
 	p "please pass arguments correctly"
